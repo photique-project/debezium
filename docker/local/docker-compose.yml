@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  connect:
+  image: debezium/connect:2.7.3.Final
+  container_name: kafka-connect
+  depends_on:
+    - kafka
+  ports:
+    - "8083:8083" # Kafka Connect REST API
+  environment:
+    # Kafka 연결
+    BOOTSTRAP_SERVERS: kafka:9094
+
+    # Connect 클러스터 설정
+    GROUP_ID: connect-cluster
+
+    # 내부 토픽 (자동 생성됨)
+    CONFIG_STORAGE_TOPIC: connect-configs
+    OFFSET_STORAGE_TOPIC: connect-offsets
+    STATUS_STORAGE_TOPIC: connect-status
+
+    # Converter 설정 (Debezium 기본)
+    KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+    VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+    KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+    VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+    # 플러그인 경로
+    PLUGIN_PATH: /kafka/connect
