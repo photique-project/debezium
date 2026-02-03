@@ -2,6 +2,7 @@
     "name": "mysql-source-connector",
     "config": {
       "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+
       "database.server.id": "1",
       "database.hostname": "host.docker.internal",
       "database.port": "3306",
@@ -12,7 +13,7 @@
       "table.include.list": "photique.outbox_events",
       "include.schema.changes": "false",
   
-      "topic.prefix": "mysql",
+      "topic.prefix": "local",
   
       "schema.history.internal.kafka.bootstrap.servers": "kafka:9094",
       "schema.history.internal.kafka.topic": "schema-history.mysql",
@@ -22,10 +23,16 @@
       "key.converter.schemas.enable": "false",
       "value.converter.schemas.enable": "false",
   
-      "transforms": "unwrap,route",
-      "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
-      "transforms.route.type": "io.debezium.transforms.ByLogicalTableRouter",
-      "transforms.route.topic.regex": "(.*)",
-      "transforms.route.topic.replacement": "post"
+      "transforms": "outbox",
+      "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+   
+      "transforms.outbox.route.by.field": "aggregate_type",
+      "transforms.outbox.route.topic.replacement": "local.photique.${routedByValue}",
+        
+      "transforms.outbox.table.field.event.id": "id",
+      "transforms.outbox.table.field.event.key": "aggregate_id",
+      "transforms.outbox.table.field.event.payload": "payload",
+      "transforms.outbox.table.fields.additional.placement": "event_type:header:type",
+      "transforms.outbox.table.field.event.timestamp": "created_at"
     }
   }
